@@ -11,6 +11,15 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/MainMenu.unity
     guid: b459403ebf57f4940b792a956ad6b8a6
+  - enabled: 1
+    path: Assets/Scenes/QRScanner.unity
+    guid: 13e24fc544b533f4f903cb41df1d10e7
+  - enabled: 1
+    path: Assets/Scenes/CompetitorList.unity
+    guid: 11b39a9aca1e0424a9dd5f2321e15224
+  - enabled: 1
+    path: Assets/Scenes/Stats.unity
+    guid: e9e55731e572ff946889b00c10db312c
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   m_UseUCBPForAssetBundles: 0
