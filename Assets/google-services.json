@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "189391895457",
+    "project_id": "tesi-45ed2",
+    "storage_bucket": "tesi-45ed2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:189391895457:android:eef97971809fe90e55e9e0",
+        "android_client_info": {
+          "package_name": "com.mystudio.gymchallenge"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA1DjglT86lcMQjbY_f6xVb268t6aeF9TU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
