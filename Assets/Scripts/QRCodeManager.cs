@@ -2,6 +2,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using ZXing;
 using ZXing.QrCode;
+using Firebase.Firestore; // Assicurati di aver installato Firebase SDK
+using Firebase.Extensions; // Per Task continuations
 
 public class QRCodeManager : MonoBehaviour
 {
@@ -10,8 +12,13 @@ public class QRCodeManager : MonoBehaviour
     public Button openQRPanelButton; // Bottone per aprire il pannello
     public Button backToMainButton;  // Bottone per tornare alla schermata principale
 
+    private FirebaseFirestore db; // Riferimento a Firestore
+
     private void Start()
     {
+        // Inizializza Firestore
+        db = FirebaseFirestore.DefaultInstance;
+
         // Nascondi il pannello del QR code all'avvio
         qrCodePanel.SetActive(false);
 
@@ -22,14 +29,20 @@ public class QRCodeManager : MonoBehaviour
 
     private void ShowQRCodePanel()
     {
-        // Genera il QR code
-        GenerateQRCode("Hello World!");
-
-        // Mostra il pannello del QR code
-        qrCodePanel.SetActive(true);
-
-        // Nasconde il bottone per generare il QR code
-        openQRPanelButton.gameObject.SetActive(false);
+        // Recupera il codice univoco da Firestore e genera il QR Code
+        FetchUniqueCodeFromFirestore((uniqueCode) =>
+        {
+            if (!string.IsNullOrEmpty(uniqueCode))
+            {
+                GenerateQRCode(uniqueCode); // Genera il QR Code con il codice univoco
+                qrCodePanel.SetActive(true); // Mostra il pannello del QR code
+                openQRPanelButton.gameObject.SetActive(false); // Nasconde il bottone
+            }
+            else
+            {
+                Debug.LogError("Impossibile recuperare il codice univoco da Firestore.");
+            }
+        });
     }
 
     private void HideQRCodePanel()
@@ -55,15 +68,55 @@ public class QRCodeManager : MonoBehaviour
             }
         };
 
-        // Genera i dati del QR code come array di colori
-        Color32[] color32 = writer.Write(data);
+        try
+        {
+            // Genera i dati del QR code come array di colori
+            Color32[] color32 = writer.Write(data);
 
-        // Crea una nuova Texture2D e applica i dati del QR code
-        Texture2D texture = new Texture2D(writer.Options.Width, writer.Options.Height);
-        texture.SetPixels32(color32);
-        texture.Apply();
+            // Crea una nuova Texture2D e applica i dati del QR code
+            Texture2D texture = new Texture2D(writer.Options.Width, writer.Options.Height);
+            texture.SetPixels32(color32);
+            texture.Apply();
 
-        // Assegna la texture all'oggetto RawImage
-        qrCodeImage.texture = texture;
+            // Assegna la texture all'oggetto RawImage
+            qrCodeImage.texture = texture;
+
+            Debug.Log("QR Code generato con dati: " + data);
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"Errore durante la generazione del QR Code: {ex.Message}");
+        }
+    }
+
+    private void FetchUniqueCodeFromFirestore(System.Action<string> onCodeFetched)
+    {
+        // Esempio: Recupera il codice univoco da Firestore
+        string userId = PlayerPrefs.GetString("UserId", "Unknown"); // Recupera l'ID utente locale
+        DocumentReference userDocRef = db.Collection("users").Document(userId);
+
+        userDocRef.GetSnapshotAsync().ContinueWithOnMainThread(task =>
+        {
+            if (task.IsCompleted && !task.IsFaulted)
+            {
+                DocumentSnapshot snapshot = task.Result;
+                if (snapshot.Exists)
+                {
+                    // Supponiamo che il documento contenga un campo "uniqueCode"
+                    string uniqueCode = snapshot.GetValue<string>("uniqueCode");
+                    onCodeFetched?.Invoke(uniqueCode);
+                }
+                else
+                {
+                    Debug.LogError("Documento utente non trovato in Firestore.");
+                    onCodeFetched?.Invoke(null);
+                }
+            }
+            else
+            {
+                Debug.LogError("Errore durante il recupero dei dati da Firestore.");
+                onCodeFetched?.Invoke(null);
+            }
+        });
     }
 }
