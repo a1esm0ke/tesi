@@ -12,10 +12,8 @@ UserSettings/
 *.pdb
 *.tmp
 *.user
-
-# Ignora tutti i file .unitypackage
-Assets/Import Package/Custom Package/*.unitypackage
-
-# Ignora file .so e .bundle
-Assets/Firebase/Plugins/x86_64/*.so
-Assets/Firebase/Plugins/x86_64/*.bundle
+*.unitypackage
+*.bundle
+*.so
+Assets/Import Package/Custom Package/*
+Assets/Firebase/Plugins/x86_64/*
