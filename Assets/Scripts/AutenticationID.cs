@@ -1,66 +1,108 @@
 using UnityEngine;
-using System;
 using Firebase.Auth;
-using System.Threading.Tasks;
 using Firebase.Firestore;
 using System.Collections.Generic;
+using System;
+using Firebase.Extensions;
 
 public class AutenticationID : MonoBehaviour
 {
     private FirebaseAuth auth;
     private FirebaseUser currentUser;
-    private FirebaseFirestore db;  // Aggiungi il riferimento a Firestore qui
+    private FirebaseFirestore db;
 
     void Start()
     {
-        // Inizializza Firebase Authentication
         auth = FirebaseAuth.DefaultInstance;
-         db = FirebaseFirestore.DefaultInstance;  // Inizializza Firestore
+        db = FirebaseFirestore.DefaultInstance;
         AuthenticateAnonymously();
     }
 
-async void AuthenticateAnonymously()
-{
-    try
+    private async void AuthenticateAnonymously()
     {
-        AuthResult result = await auth.SignInAnonymouslyAsync();
-        currentUser = result.User;
-        if (currentUser != null)
+        try
         {
-            Debug.Log("Utente anonimo autenticato. ID Utente: " + currentUser.UserId);
-            PlayerPrefs.SetString("UserId", currentUser.UserId);
-            PlayerPrefs.Save();
+            AuthResult result = await auth.SignInAnonymouslyAsync();
+            currentUser = result.User;
 
-            // Genera un codice univoco per l'utente
-            string uniqueCode = GenerateUniqueCode();
-            SyncUserWithFirestore(currentUser.UserId, uniqueCode);
+            if (currentUser != null)
+            {
+                string userId = currentUser.UserId;
+                Debug.Log("Utente anonimo autenticato. ID Utente: " + userId);
+                PlayerPrefs.SetString("UserId", userId);
+                PlayerPrefs.Save();
+
+                // Sincronizza i dati utente con Firestore
+                SyncUserWithFirestore(userId);
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError("Errore durante l'autenticazione anonima: " + ex.Message);
         }
     }
-    catch (System.Exception ex)
+
+    private void SyncUserWithFirestore(string userId)
     {
-        Debug.LogError("Errore durante l'autenticazione anonima: " + ex.Message);
-    }
-}
+        DocumentReference userDocRef = db.Collection("users").Document(userId);
 
-string GenerateUniqueCode()
-{
-    return Guid.NewGuid().ToString();  // Genera un GUID come codice univoco
-}
-
-void SyncUserWithFirestore(string userId, string uniqueCode)
-{
-    DocumentReference userDocRef = db.Collection("users").Document(userId);
-    userDocRef.SetAsync(new { uniqueCode = uniqueCode, competitors = new List<string>() })
-        .ContinueWith(task => {
-            if (task.IsCompleted && !task.IsFaulted)
+        userDocRef.GetSnapshotAsync().ContinueWithOnMainThread(task =>
+        {
+            if (task.IsCompleted && task.Result.Exists)
             {
-                Debug.Log("Sincronizzazione utente con Firestore completata: " + userId);
+                Debug.Log("Dati utente già presenti su Firestore.");
             }
             else
             {
-                Debug.LogError("Errore durante la sincronizzazione con Firestore.");
+                // Crea nuovi dati di default per l'utente
+                Dictionary<string, object> userData = new Dictionary<string, object>
+                {
+                    { "name", "Nuovo Utente" },
+                    { "profileImageUrl", "" },
+                    { "totalScore", 0 },
+                    { "characterState", "magro" },
+                    { "competitors", new List<string>() }
+                };
+
+                userDocRef.SetAsync(userData).ContinueWithOnMainThread(saveTask =>
+                {
+                    if (saveTask.IsCompleted)
+                        Debug.Log("Sincronizzazione utente con Firestore completata.");
+                    else
+                        Debug.LogError("Errore durante la sincronizzazione dei dati.");
+                });
             }
         });
-}
+    }
 
+    public void UpdateUserData(string name, string profileImageUrl, int totalScore)
+    {
+        DocumentReference userDocRef = db.Collection("users").Document(currentUser.UserId);
+
+        Dictionary<string, object> updatedData = new Dictionary<string, object>
+        {
+            { "name", name },
+            { "profileImageUrl", profileImageUrl },
+            { "totalScore", totalScore },
+            { "characterState", GetCharacterState(totalScore) }
+        };
+
+        userDocRef.UpdateAsync(updatedData).ContinueWithOnMainThread(task =>
+        {
+            if (task.IsCompleted)
+                Debug.Log("Dati utente aggiornati su Firestore.");
+            else
+                Debug.LogError("Errore durante l'aggiornamento dei dati.");
+        });
+    }
+
+    private string GetCharacterState(int totalScore)
+    {
+        if (totalScore <= 100)
+            return "magro";
+        else if (totalScore <= 500)
+            return "normale";
+        else
+            return "grosso";
+    }
 }

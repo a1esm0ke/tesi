@@ -4,7 +4,6 @@ using UnityEngine.SceneManagement;
 
 public class StatsController : MonoBehaviour
 {
-    // InputFields per le statistiche
     public InputField heightInput;
     public InputField weightInput;
     public InputField ageInput;
@@ -12,28 +11,23 @@ public class StatsController : MonoBehaviour
     public InputField trainingDaysInput;
     public InputField bodyFatPercentageInput;
 
-    // Text per il punteggio settimanale cumulativo
     public Text weeklyScoreText;
-    
     public Button backButton;
-
-    // Text per il punteggio totale
     public Text totalScoreText;
 
-    // Punteggio settimanale cumulativo (inizialmente 0)
     private int weeklyScore;
 
     void Start()
     {
         LoadWeeklyScore();
         LoadStats();
+        LoadTotalScore();
     }
 
-public void BackToMainScreen()
-{
-    SceneManager.LoadScene("MainMenu");  // Assicurati che il nome della scena sia esatto
-}
-
+    public void BackToMainScreen()
+    {
+        SceneManager.LoadScene("MainMenu");
+    }
 
     public void CalculateAndUpdateStats()
     {
@@ -49,7 +43,6 @@ public void BackToMainScreen()
         PlayerPrefs.SetString("BasalMetabolism", basalMetabolismInput.text);
         PlayerPrefs.SetString("TrainingDays", trainingDaysInput.text);
         PlayerPrefs.SetString("BodyFatPercentage", bodyFatPercentageInput.text);
-
         PlayerPrefs.Save();
     }
 
@@ -63,7 +56,7 @@ public void BackToMainScreen()
         bodyFatPercentageInput.text = PlayerPrefs.GetString("BodyFatPercentage", "");
     }
 
-    public void UpdateTotalScore()
+    private void UpdateTotalScore()
     {
         float height = float.Parse(heightInput.text);
         float weight = float.Parse(weightInput.text);
@@ -74,6 +67,12 @@ public void BackToMainScreen()
 
         int statsScore = CalculateStatsScore(height, weight, age, bodyFatPercentage, basalMetabolism, trainingDays);
         int totalScore = statsScore + weeklyScore;
+
+        // Salva il punteggio totale nei PlayerPrefs
+        PlayerPrefs.SetInt("PlayerTotalScore", totalScore);
+        PlayerPrefs.Save();
+
+        // Aggiorna il testo delle statistiche
         totalScoreText.text = $"{totalScore}";
     }
 
@@ -83,16 +82,15 @@ public void BackToMainScreen()
         int score = 0;
 
         // BMI
-        if (bmi < 18.5) score += 20; // Sottopeso
-        else if (bmi >= 18.5 && bmi < 24.9) score += 50; // Normopeso
-        else if (bmi >= 25 && bmi < 30) score += 30; // Sovrappeso
-        else score += 10; // Obesità
+        if (bmi < 18.5) score += 20;
+        else if (bmi >= 18.5 && bmi < 24.9) score += 50;
+        else if (bmi >= 25 && bmi < 30) score += 30;
+        else score += 10;
 
-        // Grasso corporeo
-        if (bodyFatPercentage < 10) score += 30; // Atleta
-        else if (bodyFatPercentage >= 10 && bodyFatPercentage < 20) score += 20; // Buono
-        else if (bodyFatPercentage >= 20 && bodyFatPercentage < 30) score += 10; // Accettabile
-        else score += 0; // Alto
+        // Percentuale di grasso corporeo
+        if (bodyFatPercentage < 10) score += 30;
+        else if (bodyFatPercentage >= 10 && bodyFatPercentage < 20) score += 20;
+        else if (bodyFatPercentage >= 20 && bodyFatPercentage < 30) score += 10;
 
         // Allenamenti settimanali
         score += trainingDays * 5;
@@ -110,13 +108,6 @@ public void BackToMainScreen()
         return score;
     }
 
-    public void AddWeeklyScore(int points)
-    {
-        weeklyScore += points;
-        SaveWeeklyScore();
-        weeklyScoreText.text = $"{weeklyScore}";
-    }
-
     private void SaveWeeklyScore()
     {
         PlayerPrefs.SetInt("WeeklyScore", weeklyScore);
@@ -129,17 +120,9 @@ public void BackToMainScreen()
         weeklyScoreText.text = $"{weeklyScore}";
     }
 
-    public void ResetStats()
+    private void LoadTotalScore()
     {
-        PlayerPrefs.SetString("Height", "0");
-        PlayerPrefs.SetString("Weight", "0");
-        PlayerPrefs.SetString("Age", "0");
-        PlayerPrefs.SetString("BasalMetabolism", "0");
-        PlayerPrefs.SetString("TrainingDays", "0");
-        PlayerPrefs.SetString("BodyFatPercentage", "0");
-
-        PlayerPrefs.Save();
-
-        LoadStats(); // Ricarica i campi per aggiornare l'interfaccia utente
+        int totalScore = PlayerPrefs.GetInt("PlayerTotalScore", 0);
+        totalScoreText.text = $"{totalScore}";
     }
 }
