@@ -18,8 +18,8 @@ public class MainMenuController : MonoBehaviour
     private void Start()
     {
         LoadPlayerData();
-        PlayerPrefs.SetInt("PlayerTotalScore", 101);  // Imposta qui il punteggio per testare la seconda skin
-        PlayerPrefs.Save();
+        //PlayerPrefs.SetInt("PlayerTotalScore", 101);  // Imposta qui il punteggio per testare la seconda skin
+        //PlayerPrefs.Save();
     }
 
     public void OpenQRScanner()
@@ -100,18 +100,25 @@ public class MainMenuController : MonoBehaviour
         }
     }
 
-    public void AddScore(int points)
+public void AddScore(int points)
+{
+    int totalScore = PlayerPrefs.GetInt("PlayerTotalScore", 0);
+    totalScore += points;
+    PlayerPrefs.SetInt("PlayerTotalScore", totalScore);
+    PlayerPrefs.Save();
+    
+    UpdateCharacterBasedOnScore(totalScore);
+    
+    // Sincronizza i dati su Firebase
+AutenticationID authID = Object.FindAnyObjectByType<AutenticationID>();
+    if (authID != null)
     {
-        int totalScore = PlayerPrefs.GetInt("PlayerTotalScore", 0);
-        totalScore += points;
-
-        // Salva il nuovo punteggio
-        PlayerPrefs.SetInt("PlayerTotalScore", totalScore);
-        PlayerPrefs.Save();
-
-        // Aggiorna l'immagine del personaggio
-        UpdateCharacterBasedOnScore(totalScore);
+        string username = PlayerPrefs.GetString("PlayerName", "Campione");
+        string profileImagePath = PlayerPrefs.GetString("PlayerProfilePhotoPath", "");
+        authID.UpdateUserData(username, profileImagePath, totalScore);
     }
+}
+
 
     public void SubtractScore(int points)
     {
