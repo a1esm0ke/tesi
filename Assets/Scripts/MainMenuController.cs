@@ -2,7 +2,6 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using System.IO;
-
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -13,6 +12,7 @@ public class MainMenuController : MonoBehaviour
     public Image playerProfileImage;          // Riferimento all'immagine del profilo del giocatore
     public Sprite defaultProfileSprite;       // Sprite predefinito per il profilo
     public Image characterImage;              // Riferimento all'immagine del personaggio
+
     private string photoFilePath;
 
     private void Start()
@@ -44,18 +44,22 @@ public class MainMenuController : MonoBehaviour
         playerNameText.text = playerName;
 
         // Carica e mostra la foto del profilo
-        photoFilePath = PlayerPrefs.GetString("PlayerProfilePhotoPath", "");
-
-        if (File.Exists(photoFilePath))
+        string profileUrl = PlayerPrefs.GetString("PlayerProfilePhotoPath", "");
+        if (!string.IsNullOrEmpty(profileUrl) && profileUrl.StartsWith("http"))
         {
-            byte[] imageBytes = File.ReadAllBytes(photoFilePath);
+            // Se il valore è un URL (ottenuto da Cloudinary), scaricalo e mostralo
+            StartCoroutine(LoadImageFromURL(profileUrl));
+        }
+        else if (!string.IsNullOrEmpty(profileUrl) && File.Exists(profileUrl))
+        {
+            // Se invece è un percorso locale (per test in Editor) lo carica da file
+            byte[] imageBytes = File.ReadAllBytes(profileUrl);
             Texture2D texture = new Texture2D(2, 2);
             texture.LoadImage(imageBytes);
 
             playerProfileImage.sprite = Sprite.Create(texture,
                 new Rect(0, 0, texture.width, texture.height),
                 new Vector2(0.5f, 0.5f));
-
             AdaptProfileImage();
             Debug.Log("Foto caricata e adattata.");
         }
@@ -68,6 +72,27 @@ public class MainMenuController : MonoBehaviour
         // Carica e aggiorna il personaggio basato sul punteggio totale
         int totalScore = PlayerPrefs.GetInt("PlayerTotalScore", 0);
         UpdateCharacterBasedOnScore(totalScore);
+    }
+
+    private System.Collections.IEnumerator LoadImageFromURL(string url)
+    {
+        using (UnityEngine.Networking.UnityWebRequest www = UnityEngine.Networking.UnityWebRequestTexture.GetTexture(url))
+        {
+            yield return www.SendWebRequest();
+            if (www.result == UnityEngine.Networking.UnityWebRequest.Result.Success)
+            {
+                Texture2D texture = UnityEngine.Networking.DownloadHandlerTexture.GetContent(www);
+                playerProfileImage.sprite = Sprite.Create(texture,
+                    new Rect(0, 0, texture.width, texture.height),
+                    new Vector2(0.5f, 0.5f));
+                AdaptProfileImage();
+                Debug.Log("Foto caricata da URL e adattata.");
+            }
+            else
+            {
+                Debug.LogError("Errore nel caricamento dell'immagine da URL: " + www.error);
+            }
+        }
     }
 
     private void UpdateCharacterBasedOnScore(int totalScore)
@@ -100,25 +125,26 @@ public class MainMenuController : MonoBehaviour
         }
     }
 
-public void AddScore(int points)
-{
-    int totalScore = PlayerPrefs.GetInt("PlayerTotalScore", 0);
-    totalScore += points;
-    PlayerPrefs.SetInt("PlayerTotalScore", totalScore);
-    PlayerPrefs.Save();
-    
-    UpdateCharacterBasedOnScore(totalScore);
-    
-    // Sincronizza i dati su Firebase
-AutenticationID authID = Object.FindAnyObjectByType<AutenticationID>();
-    if (authID != null)
+    public void AddScore(int points)
     {
-        string username = PlayerPrefs.GetString("PlayerName", "Campione");
-        string profileImagePath = PlayerPrefs.GetString("PlayerProfilePhotoPath", "");
-        authID.UpdateUserData(username, profileImagePath, totalScore);
-    }
-}
+        int totalScore = PlayerPrefs.GetInt("PlayerTotalScore", 0);
+        totalScore += points;
 
+        // Salva il nuovo punteggio
+        PlayerPrefs.SetInt("PlayerTotalScore", totalScore);
+        PlayerPrefs.Save();
+
+        UpdateCharacterBasedOnScore(totalScore);
+
+        // Sincronizza i dati su Firebase
+        AutenticationID authID = Object.FindAnyObjectByType<AutenticationID>();
+        if (authID != null)
+        {
+            string username = PlayerPrefs.GetString("PlayerName", "Campione");
+            string profileImagePath = PlayerPrefs.GetString("PlayerProfilePhotoPath", "");
+            authID.UpdateUserData(username, profileImagePath, totalScore);
+        }
+    }
 
     public void SubtractScore(int points)
     {
@@ -129,7 +155,6 @@ AutenticationID authID = Object.FindAnyObjectByType<AutenticationID>();
         PlayerPrefs.SetInt("PlayerTotalScore", totalScore);
         PlayerPrefs.Save();
 
-        // Aggiorna l'immagine del personaggio
         UpdateCharacterBasedOnScore(totalScore);
     }
 
@@ -178,24 +203,51 @@ AutenticationID authID = Object.FindAnyObjectByType<AutenticationID>();
     {
         if (File.Exists(path))
         {
+            // Leggi i byte dell'immagine selezionata
             byte[] imageBytes = File.ReadAllBytes(path);
+
+            // Mostra l'immagine immediatamente nell'interfaccia utente
             Texture2D texture = new Texture2D(2, 2);
             texture.LoadImage(imageBytes);
-
             playerProfileImage.sprite = Sprite.Create(texture,
                 new Rect(0, 0, texture.width, texture.height),
                 new Vector2(0.5f, 0.5f));
-
             AdaptProfileImage();
 
-            photoFilePath = Path.Combine(Application.persistentDataPath, "PlayerProfile.png");
-            File.WriteAllBytes(photoFilePath, imageBytes);
-            PlayerPrefs.SetString("PlayerProfilePhotoPath", photoFilePath);
-            PlayerPrefs.Save();
+            // Utilizza CloudinaryUploader per caricare l'immagine su Cloudinary
+            CloudinaryUploader uploader = Object.FindFirstObjectByType<CloudinaryUploader>();
+            if (uploader != null)
+            {
+                StartCoroutine(uploader.UploadImage(imageBytes,
+                    (url) =>
+                    {
+                        Debug.Log("Immagine caricata con successo. URL: " + url);
+                        // Salva l'URL in PlayerPrefs
+                        PlayerPrefs.SetString("PlayerProfilePhotoPath", url);
+                        PlayerPrefs.Save();
+
+                        // Aggiorna Firestore con il nuovo URL
+                        AutenticationID authID = Object.FindAnyObjectByType<AutenticationID>();
+                        if (authID != null)
+                        {
+                            string username = PlayerPrefs.GetString("PlayerName", "Campione");
+                            int totalScore = PlayerPrefs.GetInt("PlayerTotalScore", 0);
+                            authID.UpdateUserData(username, url, totalScore);
+                        }
+                    },
+                    (error) =>
+                    {
+                        Debug.LogError("Errore nell'upload dell'immagine: " + error);
+                    }));
+            }
+            else
+            {
+                Debug.LogError("CloudinaryUploader non trovato. Assicurati di avere un GameObject con questo script nella scena.");
+            }
         }
         else
         {
-            Debug.LogError("Errore nel caricamento della nuova immagine.");
+            Debug.LogError("Errore nel caricamento della nuova immagine: file non esistente.");
         }
     }
 

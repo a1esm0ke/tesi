@@ -62,8 +62,7 @@ public class AutenticationID : MonoBehaviour
                     { "profileImageUrl", "" },
                     { "totalScore", 0 },
                     { "characterState", "magro" },
-                    { "competitors", new List<string>() }
-                };
+                    };
 
                 userDocRef.SetAsync(userData).ContinueWithOnMainThread(saveTask =>
                 {
