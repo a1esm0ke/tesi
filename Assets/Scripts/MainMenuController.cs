@@ -2,6 +2,10 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using System.IO;
+using ZXing;
+using ZXing.Common;
+using ZXing.QrCode;
+
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -11,10 +15,9 @@ public class MainMenuController : MonoBehaviour
     public Text playerNameText;               // Riferimento al testo per il nome del giocatore
     public Image playerProfileImage;          // Riferimento all'immagine del profilo del giocatore
     public Sprite defaultProfileSprite;       // Sprite predefinito per il profilo
-    public Image characterImage;              // Riferimento all'immagine del personaggio
-
-    private string photoFilePath;
-
+    public Image characterImage;  
+    
+   
     private void Start()
     {
         LoadPlayerData();
@@ -34,7 +37,7 @@ public class MainMenuController : MonoBehaviour
 
     public void OpenCompetitors()
     {
-        SceneManager.LoadScene("Competitors");
+        SceneManager.LoadScene("CompetitorList");
     }
 
     private void LoadPlayerData()
@@ -133,6 +136,8 @@ public class MainMenuController : MonoBehaviour
         // Salva il nuovo punteggio
         PlayerPrefs.SetInt("PlayerTotalScore", totalScore);
         PlayerPrefs.Save();
+        Debug.Log("Nuovo totalScore salvato in PlayerPrefs: " + totalScore);
+
 
         UpdateCharacterBasedOnScore(totalScore);
 
@@ -143,7 +148,12 @@ public class MainMenuController : MonoBehaviour
             string username = PlayerPrefs.GetString("PlayerName", "Campione");
             string profileImagePath = PlayerPrefs.GetString("PlayerProfilePhotoPath", "");
             authID.UpdateUserData(username, profileImagePath, totalScore);
+            
         }
+            else
+    {
+        Debug.LogError("AutenticationID non trovato durante l'aggiornamento del punteggio.");
+    }
     }
 
     public void SubtractScore(int points)
@@ -263,4 +273,6 @@ public class MainMenuController : MonoBehaviour
 
         playerProfileImage.preserveAspect = false;
     }
+
+
 }

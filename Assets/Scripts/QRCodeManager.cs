@@ -29,6 +29,7 @@ public class QRCodeManager : MonoBehaviour
 
     private void ShowQRCodePanel()
     {
+            Debug.Log("ShowQRCodePanel() chiamata.");
         // Recupera il codice univoco da Firestore e genera il QR Code
         FetchUniqueCodeFromFirestore((uniqueCode) =>
         {
@@ -56,6 +57,8 @@ public class QRCodeManager : MonoBehaviour
 
     private void GenerateQRCode(string data)
     {
+            Debug.Log("GenerateQRCode() chiamata con dati: " + data);
+
         // Configura il BarcodeWriter per generare un QR code
         var writer = new BarcodeWriter
         {
@@ -89,34 +92,14 @@ public class QRCodeManager : MonoBehaviour
         }
     }
 
-    private void FetchUniqueCodeFromFirestore(System.Action<string> onCodeFetched)
-    {
-        // Esempio: Recupera il codice univoco da Firestore
-        string userId = PlayerPrefs.GetString("UserId", "Unknown"); // Recupera l'ID utente locale
-        DocumentReference userDocRef = db.Collection("users").Document(userId);
+private void FetchUniqueCodeFromFirestore(System.Action<string> onCodeFetched)
+{
+    // Recupera l'ID utente salvato in PlayerPrefs
+    string userId = PlayerPrefs.GetString("UserId", "Unknown");
+    Debug.Log("FetchUniqueCodeFromFirestore() per UserId: " + userId);
 
-        userDocRef.GetSnapshotAsync().ContinueWithOnMainThread(task =>
-        {
-            if (task.IsCompleted && !task.IsFaulted)
-            {
-                DocumentSnapshot snapshot = task.Result;
-                if (snapshot.Exists)
-                {
-                    // Supponiamo che il documento contenga un campo "uniqueCode"
-                    string uniqueCode = snapshot.GetValue<string>("uniqueCode");
-                    onCodeFetched?.Invoke(uniqueCode);
-                }
-                else
-                {
-                    Debug.LogError("Documento utente non trovato in Firestore.");
-                    onCodeFetched?.Invoke(null);
-                }
-            }
-            else
-            {
-                Debug.LogError("Errore durante il recupero dei dati da Firestore.");
-                onCodeFetched?.Invoke(null);
-            }
-        });
-    }
+    // Usa direttamente l'userId come codice univoco
+    onCodeFetched?.Invoke(userId);
+}
+
 }
