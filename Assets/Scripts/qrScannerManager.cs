@@ -64,23 +64,22 @@ void ScanQRCode()
         var color32 = webCamTexture.GetPixels32();
         var result = barcodeReader.Decode(color32, webCamTexture.width, webCamTexture.height);
 
-        if (result != null)
-        {
-            string scannedData = result.Text;
+if (result != null)
+{
+    string scannedData = result.Text;
+    resultText.text = $"QR Code rilevato: {scannedData}";
+    Debug.Log($"QR Code rilevato: {scannedData}");
 
-            // Mostra l'ID utente scansionato
-            resultText.text = $"QR Code rilevato: {scannedData}";
-            Debug.Log($"QR Code rilevato: {scannedData}");
+    // Salva l'ID scansionato nella lista persistente
+    SaveScannedCompetitor(scannedData);
 
-            // Salva l'ID scansionato in una lista persistente
-            SaveScannedCompetitor(scannedData);
+    // Ferma la scansione
+    StopScanning();
 
-            // Ferma la scansione dopo il rilevamento
-            StopScanning();
+    // Carica la scena "Competitors"
+    SceneManager.LoadScene("CompetitorList");
+}
 
-            // Carica la scena Competitors (oppure puoi decidere di restare nella scena corrente)
-            SceneManager.LoadScene("CompetitorList");
-        }
     }
     catch (System.Exception ex)
     {
@@ -91,28 +90,28 @@ void ScanQRCode()
 private void SaveScannedCompetitor(string competitorId)
 {
     CompetitorList list = new CompetitorList();
-
-    // Se esiste già una lista salvata, deserializzala
     if (PlayerPrefs.HasKey("ScannedCompetitors"))
     {
         string json = PlayerPrefs.GetString("ScannedCompetitors");
-        list = JsonUtility.FromJson<CompetitorList>(json);
+        if (!string.IsNullOrEmpty(json))
+            list = JsonUtility.FromJson<CompetitorList>(json);
     }
 
-    // Se l'ID non è già presente, aggiungilo
     if (!list.competitorIds.Contains(competitorId))
     {
         list.competitorIds.Add(competitorId);
         string newJson = JsonUtility.ToJson(list);
         PlayerPrefs.SetString("ScannedCompetitors", newJson);
         PlayerPrefs.Save();
-        Debug.Log("Competitor salvato: " + competitorId);
+        Debug.Log("Competitor salvato: " + competitorId + ", JSON: " + newJson);
     }
     else
     {
         Debug.Log("Competitor già presente: " + competitorId);
     }
 }
+
+
 
 
 

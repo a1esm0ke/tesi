@@ -36,7 +36,6 @@ void Start()
     {
         string json = PlayerPrefs.GetString("ScannedCompetitors");
         CompetitorList list = JsonUtility.FromJson<CompetitorList>(json);
-
         if (list != null && list.competitorIds.Count > 0)
         {
             Debug.Log("Competitor scansionati trovati: " + list.competitorIds.Count);
@@ -47,7 +46,7 @@ void Start()
         }
         else
         {
-            Debug.Log("Nessun competitor scansionato da caricare.");
+            Debug.Log("La lista dei competitor è vuota.");
         }
     }
     else
