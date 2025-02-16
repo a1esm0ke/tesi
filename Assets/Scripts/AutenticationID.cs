@@ -20,66 +20,89 @@ public class AutenticationID : MonoBehaviour
         AuthenticateAnonymously();
     }
 
-    private async void AuthenticateAnonymously()
+private async void AuthenticateAnonymously()
+{
+    Debug.Log("[AutenticationID] Attempting anonymous authentication...");
+    
+    try
     {
-        Debug.Log("[AutenticationID] Attempting anonymous authentication...");
-        try
-        {
-            AuthResult result = await auth.SignInAnonymouslyAsync();
-            currentUser = result.User;
-            if (currentUser != null)
-            {
-                string userId = currentUser.UserId;
-                Debug.Log("[AutenticationID] Anonymous user authenticated. UserID: " + userId);
-                PlayerPrefs.SetString("UserId", userId);
-                PlayerPrefs.Save();
+        AuthResult result = await auth.SignInAnonymouslyAsync();
+        currentUser = result.User;
 
-                // Sincronizza i dati utente con Firestore
-                SyncUserWithFirestore(userId);
-            }
-            else
-            {
-                Debug.LogError("[AutenticationID] Authentication succeeded but currentUser is null.");
-            }
-        }
-        catch (Exception ex)
+        if (currentUser == null)
         {
-            Debug.LogError("[AutenticationID] Error during anonymous authentication: " + ex.Message);
+            Debug.LogError("[AutenticationID] Authentication succeeded but currentUser is NULL! Ritento il recupero dell'utente...");
+            currentUser = FirebaseAuth.DefaultInstance.CurrentUser;
+        }
+
+        if (currentUser != null)
+        {
+            string userId = currentUser.UserId;
+            Debug.Log("[AutenticationID] Anonymous user authenticated. UserID: " + userId);
+
+            // Salva UserId in PlayerPrefs
+            PlayerPrefs.SetString("UserId", userId);
+            PlayerPrefs.Save();
+
+            // Sincronizza i dati utente con Firestore
+            SyncUserWithFirestore(userId);
+        }
+        else
+        {
+            Debug.LogError("[AutenticationID] ERRORE: Impossibile recuperare l'utente dopo il login anonimo!");
         }
     }
-
-    public void SyncUserWithFirestore(string userId)
+    catch (Exception ex)
     {
-        Debug.Log("[AutenticationID] SyncUserWithFirestore called for userId: " + userId);
-        DocumentReference userDocRef = db.Collection("users").Document(userId);
-
-        userDocRef.GetSnapshotAsync().ContinueWithOnMainThread(task =>
-        {
-            if (task.IsCompleted && task.Result.Exists)
-            {
-                Debug.Log("[AutenticationID] User document already exists in Firestore for userId: " + userId);
-            }
-            else
-            {
-                Debug.Log("[AutenticationID] User document not found. Creating new document for userId: " + userId);
-                // Crea i dati iniziali per l'utente
-                Dictionary<string, object> userData = new Dictionary<string, object>
-                {
-                    { "name", PlayerPrefs.GetString("PlayerName", "Nuovo Utente") },
-                    { "profileImageUrl", "" },
-                    { "totalScore", 0 },
-                };
-
-                userDocRef.SetAsync(userData).ContinueWithOnMainThread(saveTask =>
-                {
-                    if (saveTask.IsCompleted)
-                        Debug.Log("[AutenticationID] User document created successfully in Firestore for userId: " + userId);
-                    else
-                        Debug.LogError("[AutenticationID] Error while creating user document in Firestore: " + saveTask.Exception);
-                });
-            }
-        });
+        Debug.LogError("[AutenticationID] Error during anonymous authentication: " + ex.Message);
     }
+}
+
+
+public void SyncUserWithFirestore(string userId)
+{
+    if (string.IsNullOrEmpty(userId))
+    {
+        Debug.LogError("[AutenticationID] ❌ ERRORE: userId è VUOTO! Firestore non può sincronizzare un ID vuoto.");
+        return;
+    }
+
+    Debug.Log("[AutenticationID] 🔄 SyncUserWithFirestore chiamato per userId: " + userId);
+    DocumentReference userDocRef = db.Collection("users").Document(userId);
+
+    userDocRef.GetSnapshotAsync().ContinueWithOnMainThread(task =>
+    {
+        if (task.IsCompleted && task.Result.Exists)
+        {
+            Debug.Log("[AutenticationID] ✅ L'utente esiste già su Firestore. Nessuna azione necessaria.");
+        }
+        else
+        {
+            Debug.Log("[AutenticationID] 🆕 Creazione di un nuovo documento utente su Firestore...");
+            Dictionary<string, object> userData = new Dictionary<string, object>
+            {
+                { "name", "Nuovo Utente" },
+                { "profileImageUrl", "" },
+                { "totalScore", 0 },
+                { "check-mark1", false },
+                { "check-mark2", false },
+                { "check-mark3", false },
+                { "esercizio1", "" },
+                { "esercizio2", "" },
+                { "esercizio3", "" }
+            };
+
+            userDocRef.SetAsync(userData).ContinueWithOnMainThread(saveTask =>
+            {
+                if (saveTask.IsCompleted)
+                    Debug.Log("[AutenticationID] ✅ Nuovo utente creato su Firestore con successo!");
+                else
+                    Debug.LogError("[AutenticationID] ❌ Errore nella creazione del documento utente: " + saveTask.Exception);
+            });
+        }
+    });
+}
+
 
     public void UpdateUserData(string name, string profileImageUrl, int totalScore)
     {

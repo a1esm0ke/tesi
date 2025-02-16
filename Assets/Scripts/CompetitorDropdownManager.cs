@@ -297,7 +297,7 @@ private void OnDropdownValueChanged(int index)
 
 void OpenChallengeScene()
 {
-    SceneManager.LoadScene("Challenge");
+    SceneManager.LoadScene("ChallengeScene");
 }
 
 
