@@ -43,6 +43,8 @@ private async void AuthenticateAnonymously()
             // Salva UserId in PlayerPrefs
             PlayerPrefs.SetString("UserId", userId);
             PlayerPrefs.Save();
+            Debug.Log($"✅ UserID salvato: {userId}");
+
 
             // Sincronizza i dati utente con Firestore
             SyncUserWithFirestore(userId);
@@ -84,9 +86,9 @@ public void SyncUserWithFirestore(string userId)
                 { "name", "Nuovo Utente" },
                 { "profileImageUrl", "" },
                 { "totalScore", 0 },
-                { "check-mark1", false },
-                { "check-mark2", false },
-                { "check-mark3", false },
+               // { "checkmark_1", false },
+               // { "checkmark_2", false },
+               // { "checkmark_3", false },
                 { "esercizio1", "" },
                 { "esercizio2", "" },
                 { "esercizio3", "" }
@@ -104,36 +106,54 @@ public void SyncUserWithFirestore(string userId)
 }
 
 
-    public void UpdateUserData(string name, string profileImageUrl, int totalScore)
+public void UpdateUserData(string name, string profileImageUrl)
+{
+    if (currentUser == null)
     {
-        if (currentUser == null)
-        {
-            Debug.LogError("[AutenticationID] currentUser is null! Cannot update data.");
-            return;
-        }
-
-        Debug.Log("[AutenticationID] Updating user data for userId: " + currentUser.UserId);
-        DocumentReference userDocRef = db.Collection("users").Document(currentUser.UserId);
-
-        Dictionary<string, object> updatedData = new Dictionary<string, object>
-        {
-            { "name", name },
-            { "profileImageUrl", profileImageUrl },
-            { "totalScore", totalScore },
-        };
-
-        Debug.Log("[AutenticationID] UpdateUserData called with: name=" + name +
-                  ", profileImageUrl=" + profileImageUrl +
-                  ", totalScore=" + totalScore);
-
-        userDocRef.UpdateAsync(updatedData).ContinueWithOnMainThread(task =>
-        {
-            if (task.IsCompleted)
-                Debug.Log("[AutenticationID] User data updated successfully in Firestore for userId: " + currentUser.UserId);
-            else
-                Debug.LogError("[AutenticationID] Error while updating user data in Firestore: " + task.Exception);
-        });
+        Debug.LogError("[AutenticationID] currentUser is null! Cannot update data.");
+        return;
     }
+
+    string userId = currentUser.UserId;
+    DocumentReference userDocRef = db.Collection("users").Document(userId);
+
+    userDocRef.GetSnapshotAsync().ContinueWithOnMainThread(task =>
+    {
+        if (task.IsCompleted && !task.IsFaulted)
+        {
+            DocumentSnapshot snapshot = task.Result;
+            if (snapshot.Exists)
+            {
+                Dictionary<string, object> data = snapshot.ToDictionary();
+                int currentTotalScore = data.ContainsKey("totalScore") ? Convert.ToInt32(data["totalScore"]) : 0;
+
+                Dictionary<string, object> updatedData = new Dictionary<string, object>
+                {
+                    { "name", name },
+                    { "profileImageUrl", profileImageUrl },
+                    { "totalScore", currentTotalScore } // 🔥 Manteniamo il valore corretto!
+                };
+
+                userDocRef.UpdateAsync(updatedData).ContinueWithOnMainThread(updateTask =>
+                {
+                    if (updateTask.IsCompleted)
+                        Debug.Log($"✅ Dati aggiornati con successo! totalScore: {currentTotalScore}");
+                    else
+                        Debug.LogError("❌ Errore nell'aggiornamento dei dati utente su Firestore: " + updateTask.Exception);
+                });
+            }
+            else
+            {
+                Debug.LogWarning("[AutenticationID] ⚠️ Documento utente non trovato in Firestore.");
+            }
+        }
+        else
+        {
+            Debug.LogError("[AutenticationID] ❌ Errore nel recupero del documento utente: " + task.Exception);
+        }
+    });
+}
+
 
     public string GetCharacterState(int totalScore)
     {

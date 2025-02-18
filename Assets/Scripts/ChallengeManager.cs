@@ -40,11 +40,28 @@ private void BackToMainMenu()
     SceneManager.LoadScene("MainMenu");
 }
 
-private void GoToQuestScene()
+public void GoToQuestScene()
 {
-    Debug.Log("Quest scene button premuto! Vai alla scena quest.");
+    string enemyId = PlayerPrefs.GetString("EnemyID", "UnknownEnemy");
+    string userId = PlayerPrefs.GetString("UserId", "UnknownUser");
+
+    Debug.Log($"🚀 Cambio scena! Controllo valori salvati nei PlayerPrefs:");
+    Debug.Log($"🟢 EnemyID: {enemyId}");
+    Debug.Log($"🟢 UserID: {userId}");
+
+    if (enemyId == "UnknownEnemy")
+    {
+        Debug.LogError("❌ ERRORE: EnemyID non è stato salvato correttamente!");
+    }
+
+    if (userId == "UnknownUser")
+    {
+        Debug.LogError("❌ ERRORE: UserID non è stato salvato correttamente!");
+    }
+
     SceneManager.LoadScene("QuestScene");
 }
+
 
 
 

@@ -147,7 +147,7 @@ public class MainMenuController : MonoBehaviour
         {
             string username = PlayerPrefs.GetString("PlayerName", "Campione");
             string profileImagePath = PlayerPrefs.GetString("PlayerProfilePhotoPath", "");
-            authID.UpdateUserData(username, profileImagePath, totalScore);
+            authID.UpdateUserData(username, profileImagePath);
             
         }
             else
@@ -242,7 +242,7 @@ public class MainMenuController : MonoBehaviour
                         {
                             string username = PlayerPrefs.GetString("PlayerName", "Campione");
                             int totalScore = PlayerPrefs.GetInt("PlayerTotalScore", 0);
-                            authID.UpdateUserData(username, url, totalScore);
+                            authID.UpdateUserData(username, url);
                         }
                     },
                     (error) =>

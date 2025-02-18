@@ -107,6 +107,8 @@ else
     }
 
     competitorDropdown.onValueChanged.AddListener(OnDropdownValueChanged);
+
+    
 }
 
 private void HideCompetitorDetails()
@@ -274,8 +276,14 @@ private void OnDropdownValueChanged(int index)
     {
         CompetitorData compData = competitors[selectedName];
         competitorScoreText.text = "Punti: " + compData.totalScore;
+                // 🔥 Salva il CompetitorID selezionato nei PlayerPrefs come EnemyID
+        PlayerPrefs.SetString("EnemyID", compData.competitorId);
+        PlayerPrefs.Save();
+
+        Debug.Log($"✅ EnemyID salvato: {compData.competitorId}");
 
         // **Mostra i dettagli quando un avversario è selezionato**
+        competitorScoreText.text = "Punti: " + compData.totalScore;
         competitorProfileImage.gameObject.SetActive(true);
         competitorCharacterImage.gameObject.SetActive(true);
         competitorScoreText.gameObject.SetActive(true);
@@ -297,8 +305,32 @@ private void OnDropdownValueChanged(int index)
 
 void OpenChallengeScene()
 {
-    SceneManager.LoadScene("ChallengeScene");
+    int index = competitorDropdown.value; // Ottiene l'index selezionato
+    if (index == 0) // Se è ancora sulla prima opzione ("Scegli un avversario"), esci
+    {
+        Debug.LogWarning("⚠️ Nessun avversario selezionato! Seleziona un avversario prima di iniziare la challenge.");
+        return;
+    }
+
+    string selectedName = competitorDropdown.options[index].text;
+    if (competitors.ContainsKey(selectedName))
+    {
+        CompetitorData compData = competitors[selectedName];
+
+        // 🔥 **Salva l'ID del competitor come EnemyID nei PlayerPrefs**
+        PlayerPrefs.SetString("EnemyID", compData.competitorId);
+        PlayerPrefs.Save();
+        Debug.Log($"✅ EnemyID impostato su: {compData.competitorId}");
+
+        // 🔥 **Ora carica la scena della challenge**
+        SceneManager.LoadScene("ChallengeScene");
+    }
+    else
+    {
+        Debug.LogError("❌ Errore: il nome selezionato non è presente nella lista competitors!");
+    }
 }
+
 
 
     private IEnumerator DownloadAndSetImage(Image imageComponent, string imageUrl)

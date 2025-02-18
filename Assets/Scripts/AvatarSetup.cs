@@ -37,7 +37,7 @@ public class AvatarSetup : MonoBehaviour
 
                 // Aggiorna Firestore con i dati iniziali
                 string profileImageUrl = PlayerPrefs.GetString("PlayerProfilePhotoPath", "");
-                authID.UpdateUserData(username, profileImageUrl, 0);
+                authID.UpdateUserData(username, profileImageUrl);
                 Debug.Log("Chiamato UpdateUserData con i seguenti dati: " +
                           "Username: " + username +
                           ", profileImageUrl: " + profileImageUrl +

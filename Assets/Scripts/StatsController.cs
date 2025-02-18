@@ -1,6 +1,10 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using Firebase.Firestore;
+using Firebase.Extensions;
+using System;
+using System.Collections.Generic;
 
 public class StatsController : MonoBehaviour
 {
@@ -11,17 +15,18 @@ public class StatsController : MonoBehaviour
     public InputField trainingDaysInput;
     public InputField bodyFatPercentageInput;
 
-    public Text weeklyScoreText;
     public Button backButton;
     public Text totalScoreText;
 
-    private int weeklyScore;
+    private FirebaseFirestore db;
+    private int previousStatsScore = 0; // 🔥 Memorizza il punteggio delle statistiche precedenti
+    private int totalScore = 0; // 🔥 Memorizza il punteggio totale attuale
 
     void Start()
     {
-        LoadWeeklyScore();
+        db = FirebaseFirestore.DefaultInstance;
         LoadStats();
-        LoadTotalScore();
+        LoadTotalScoreFromFirebase(); // 🔥 Recupera il totalScore da Firebase
     }
 
     public void BackToMainScreen()
@@ -56,24 +61,77 @@ public class StatsController : MonoBehaviour
         bodyFatPercentageInput.text = PlayerPrefs.GetString("BodyFatPercentage", "");
     }
 
+    private void LoadTotalScoreFromFirebase()
+    {
+        string userId = PlayerPrefs.GetString("UserId", "UnknownUser");
+
+        if (userId == "UnknownUser")
+        {
+            Debug.LogError("❌ Errore: UserID non trovato nei PlayerPrefs!");
+            return;
+        }
+
+        db.Collection("users").Document(userId).GetSnapshotAsync().ContinueWithOnMainThread(task =>
+        {
+            if (task.IsCompleted && task.Result.Exists)
+            {
+                Dictionary<string, object> data = task.Result.ToDictionary();
+                totalScore = data.ContainsKey("totalScore") ? Convert.ToInt32(data["totalScore"]) : 0;
+                previousStatsScore = data.ContainsKey("statsScore") ? Convert.ToInt32(data["statsScore"]) : 0;
+
+                Debug.Log($"📥 Punteggio totale da Firebase: {totalScore}");
+                Debug.Log($"📥 Punteggio Statistiche da Firebase: {previousStatsScore}");
+                
+                // 🔥 Aggiorna l'UI con il valore corretto
+                totalScoreText.text = $"{totalScore}";
+
+                // 🔄 Salva il punteggio nei PlayerPrefs
+                PlayerPrefs.SetInt("PlayerTotalScore", totalScore);
+                PlayerPrefs.Save();
+            }
+            else
+            {
+                Debug.LogWarning("⚠️ Documento utente non trovato in Firestore.");
+            }
+        });
+    }
+
     private void UpdateTotalScore()
     {
-        float height = float.Parse(heightInput.text);
-        float weight = float.Parse(weightInput.text);
-        int age = int.Parse(ageInput.text);
-        float basalMetabolism = float.Parse(basalMetabolismInput.text);
-        int trainingDays = int.Parse(trainingDaysInput.text);
-        float bodyFatPercentage = float.Parse(bodyFatPercentageInput.text);
+        try
+        {
+            float height = float.Parse(heightInput.text);
+            float weight = float.Parse(weightInput.text);
+            int age = int.Parse(ageInput.text);
+            float basalMetabolism = float.Parse(basalMetabolismInput.text);
+            int trainingDays = int.Parse(trainingDaysInput.text);
+            float bodyFatPercentage = float.Parse(bodyFatPercentageInput.text);
 
-        int statsScore = CalculateStatsScore(height, weight, age, bodyFatPercentage, basalMetabolism, trainingDays);
-        int totalScore = statsScore + weeklyScore;
+            int newStatsScore = CalculateStatsScore(height, weight, age, bodyFatPercentage, basalMetabolism, trainingDays);
 
-        // Salva il punteggio totale nei PlayerPrefs
-        PlayerPrefs.SetInt("PlayerTotalScore", totalScore);
-        PlayerPrefs.Save();
+            // 🔥 Rimuoviamo il vecchio StatScore dal totalScore
+            totalScore -= previousStatsScore;
 
-        // Aggiorna il testo delle statistiche
-        totalScoreText.text = $"{totalScore}";
+            // 🔥 Aggiungiamo il nuovo StatScore
+            totalScore += newStatsScore;
+
+            // 🔄 Salviamo il nuovo valore
+            PlayerPrefs.SetInt("PlayerTotalScore", totalScore);
+            PlayerPrefs.Save();
+
+            // Aggiorna il testo dell'interfaccia utente
+            totalScoreText.text = $"{totalScore}";
+
+            // 🔥 Aggiorna Firebase
+            UpdateTotalScoreInFirebase(totalScore, newStatsScore);
+
+            // 🔄 Memorizza il nuovo valore per il prossimo aggiornamento
+            previousStatsScore = newStatsScore;
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"❌ Errore durante il calcolo del punteggio: {e.Message}");
+        }
     }
 
     private int CalculateStatsScore(float height, float weight, int age, float bodyFatPercentage, float basalMetabolism, int trainingDays)
@@ -108,21 +166,32 @@ public class StatsController : MonoBehaviour
         return score;
     }
 
-    private void SaveWeeklyScore()
+    private void UpdateTotalScoreInFirebase(int totalScore, int statsScore)
     {
-        PlayerPrefs.SetInt("WeeklyScore", weeklyScore);
-        PlayerPrefs.Save();
-    }
+        string userId = PlayerPrefs.GetString("UserId", "UnknownUser");
 
-    private void LoadWeeklyScore()
-    {
-        weeklyScore = PlayerPrefs.GetInt("WeeklyScore", 0);
-        weeklyScoreText.text = $"{weeklyScore}";
-    }
+        if (userId == "UnknownUser")
+        {
+            Debug.LogError("❌ Errore: UserID non trovato nei PlayerPrefs!");
+            return;
+        }
 
-    private void LoadTotalScore()
-    {
-        int totalScore = PlayerPrefs.GetInt("PlayerTotalScore", 0);
-        totalScoreText.text = $"{totalScore}";
+        Debug.Log($"📤 Aggiornamento totalScore su Firebase per UserID: {userId}, Nuovo Punteggio: {totalScore}, StatScore: {statsScore}");
+
+        db.Collection("users").Document(userId).UpdateAsync(new Dictionary<string, object>
+        {
+            { "totalScore", totalScore },
+            { "statsScore", statsScore }
+        }).ContinueWithOnMainThread(task =>
+        {
+            if (task.IsCompleted)
+            {
+                Debug.Log($"✅ totalScore aggiornato con successo su Firebase! Nuovo valore: {totalScore}");
+            }
+            else
+            {
+                Debug.LogError("❌ Errore nell'aggiornamento di totalScore su Firestore: " + task.Exception);
+            }
+        });
     }
 }

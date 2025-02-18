@@ -27,7 +27,7 @@ public class FirebaseUpdater : MonoBehaviour
         AutenticationID authID = Object.FindAnyObjectByType<AutenticationID>();
         if (authID != null)
         {
-            authID.UpdateUserData(playerName, profileImageUrl, totalScore);
+            authID.UpdateUserData(playerName, profileImageUrl);
             Debug.Log("[FirebaseUpdater] Aggiornamento periodico: " +
                       "PlayerName = " + playerName +
                       ", profileImageUrl = " + profileImageUrl +
