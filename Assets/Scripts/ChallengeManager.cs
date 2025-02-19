@@ -10,6 +10,8 @@ public class ChallengeManager : MonoBehaviour
     public GameObject questPanel, minigamePanel, quizPanel; // Pannelli delle modalità
     public Button backButton;         // Bottone per tornare al Main Menu
     public Button QuestSceneButton; 
+    public Button MiniGameSceneButton; 
+
     void Start()
     {
         // Imposta di default la modalità "Quest"
@@ -20,6 +22,7 @@ public class ChallengeManager : MonoBehaviour
         minigameButton.onClick.AddListener(ShowMinigame);
         quizButton.onClick.AddListener(ShowQuiz);
         QuestSceneButton.onClick.AddListener(GoToQuestScene);
+        MiniGameSceneButton.onClick.AddListener(GoToStartGameScene);
             // Gestione del bottone back
     if (backButton != null)
 {
@@ -38,6 +41,12 @@ private void BackToMainMenu()
 {
     Debug.Log("Back button premuto! Ritorno al MainMenu.");
     SceneManager.LoadScene("MainMenu");
+}
+
+private void GoToStartGameScene()
+{
+    Debug.Log("StartGameScene button premuto! Ritorno al StartGameScene.");
+    SceneManager.LoadScene("StartGameScene");
 }
 
 public void GoToQuestScene()

@@ -1,0 +1,24 @@
+
+Package Name: Polytoon Gym
+Author: comphonia
+Support: support@comphonia.com
+Version: 1.0(inertia)
+
+Thank you for downloading this growing package.
+
+Please note that these models are specially unwrapped and the UV color effect will not work on other models in your scene,
+however this package offers different color skins to adapt to your scene. Currently 24 models all share 1 texture and are 
+between 6-120 polygons to see the exact poly count for each model please visit http://www.comphonia.com .
+
+How to use:
+to change the color of the model:
+-------Manually (Fastest)------
+- Select the poly toon material
+- move the offset values of Y to choose a desired color and offset X to choose or swap different shade of the color.
+
+------Automatically (More Accurate)-------
+- Turn on the "_Material Offset" GameObject and hit play as the colors cycle through stop and copy the *material Y Offset value and paste it in 
+  *Main Texture offset Y on the UV script.
+- Input x on the axis (UV Offset script) and hit play again and stop when you have seen a desired shade.
+- Turn off the _Material Offset GameObject and you have your custom skin.
+ 
