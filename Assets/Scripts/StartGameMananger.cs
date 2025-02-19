@@ -10,12 +10,20 @@ public class StartGame : MonoBehaviour
     {
         if (startButton != null)
         {
-            startButton.onClick.AddListener(LoadMiniGameScene);
+            startButton.onClick.AddListener(LoadRandomMiniGameScene);
         }
     }
 
-    void LoadMiniGameScene()
+    void LoadRandomMiniGameScene()
     {
-        SceneManager.LoadScene("MiniGameScene"); // Assicurati che il nome sia corretto
+        // Scegli una scena a caso: 50% MiniGameScene, 50% MiniGame2Scene
+        if (Random.value < 0.5f)
+        {
+            SceneManager.LoadScene("MiniGameScene");
+        }
+        else
+        {
+            SceneManager.LoadScene("MiniGame2Scene");
+        }
     }
 }
