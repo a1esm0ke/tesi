@@ -2428,6 +2428,8 @@ MonoBehaviour:
   QuestSceneButton: {fileID: 1604173205}
   MiniGameSceneButton: {fileID: 1279403937}
   QuizSceneButton: {fileID: 1656719187}
+  minigameButtonText: {fileID: 227933040}
+  quizButtonText: {fileID: 1972842112}
 --- !u!4 &1576652328
 Transform:
   m_ObjectHideFlags: 0

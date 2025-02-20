@@ -86,9 +86,6 @@ public void SyncUserWithFirestore(string userId)
                 { "name", "Nuovo Utente" },
                 { "profileImageUrl", "" },
                 { "totalScore", 0 },
-               // { "checkmark_1", false },
-               // { "checkmark_2", false },
-               // { "checkmark_3", false },
                 { "esercizio1", "" },
                 { "esercizio2", "" },
                 { "esercizio3", "" }

@@ -4,6 +4,10 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine.SceneManagement; // Importa SceneManager
+using Firebase;
+using Firebase.Firestore;
+using Firebase.Extensions;
+using System;
 
 
 public class QuizManager : MonoBehaviour
@@ -21,6 +25,8 @@ public class QuizManager : MonoBehaviour
     private int score = 0;
     private float timeRemaining = 600f; // 10 minuti
     private bool isQuizActive = false;
+    private FirebaseFirestore db;
+    private string userId;
 
 void Start()
 {
@@ -29,6 +35,14 @@ void Start()
     // Mostra solo la selezione della difficoltà, nasconde il quiz
     difficultySelectionUI.SetActive(true);
     quizUI.SetActive(false);
+    // Inizializza Firebase e recupera l'ID utente
+        db = FirebaseFirestore.DefaultInstance;
+        userId = PlayerPrefs.GetString("UserId", "UnknownUser");
+
+        if (userId == "UnknownUser")
+        {
+            Debug.LogError("❌ ERRORE: UserId non trovato nei PlayerPrefs!");
+        }
 }
 
 
@@ -108,7 +122,7 @@ void StartQuiz()
 
         for (int i = currentQuestions.Count - 1; i > 0; i--)
         {
-            int randIndex = Random.Range(0, i + 1);
+            int randIndex = UnityEngine.Random.Range(0, i + 1);
             QuizData.Question temp = currentQuestions[i];
             currentQuestions[i] = currentQuestions[randIndex];
             currentQuestions[randIndex] = temp;
@@ -212,27 +226,90 @@ IEnumerator TimerCountdown()
 }
 
 
-void EndQuiz()
-{
-    isQuizActive = false;
-
-    // Mostra il punteggio nel formato "Punteggio: X/10"
-    questionText.text = $"Quiz terminato!\nPunteggio: {score / 10}/10";
-    
-    foreach (Button btn in answerButtons)
+    void EndQuiz()
     {
-        btn.gameObject.SetActive(false);
+        isQuizActive = false;
+
+        int correctAnswers = score / 10; // Ogni risposta corretta vale 10 punti, quindi diviso 10 otteniamo il numero di risposte corrette
+
+        questionText.text = $"Quiz terminato!\nPunteggio: {correctAnswers}/10";
+
+        foreach (Button btn in answerButtons)
+        {
+            btn.gameObject.SetActive(false);
+        }
+
+        // Se il giocatore ha fatto almeno 10 risposte corrette, aggiorna il punteggio su Firebase
+        if (correctAnswers >= 10)
+        {
+            int scoreIncrement = GetScoreIncrementByDifficulty();
+            UpdateTotalScoreOnFirebase(scoreIncrement);
+            StartCoroutine(ReturnToChallengeScene());
+
+        }
+        else
+        {
+            StartCoroutine(ReturnToChallengeScene());
+        }
     }
 
-    // Attende 3 secondi e poi torna alla ChallengeScene
-    StartCoroutine(ReturnToChallengeScene());
-}
+    int GetScoreIncrementByDifficulty()
+    {
+        string difficulty = difficultyDropdown.options[difficultyDropdown.value].text;
+        switch (difficulty)
+        {
+            case "Easy":
+                return 1;
+            case "Normal":
+                return 2;
+            case "Hard":
+                return 3;
+            default:
+                return 0;
+        }
+    }
 
-// Coroutine che aspetta 3 secondi e cambia scena
-IEnumerator ReturnToChallengeScene()
-{
-    yield return new WaitForSeconds(3f);
-    SceneManager.LoadScene("ChallengeScene"); // Nome della scena da caricare
-}
+    void UpdateTotalScoreOnFirebase(int scoreIncrement)
+    {
+        if (userId == "UnknownUser")
+        {
+            Debug.LogError("❌ ERRORE: Non posso aggiornare Firebase perché l'UserId non è valido!");
+            return;
+        }
 
+        DocumentReference userRef = db.Collection("users").Document(userId);
+
+        db.RunTransactionAsync(transaction =>
+        {
+            return transaction.GetSnapshotAsync(userRef).ContinueWith(task =>
+            {
+                DocumentSnapshot snapshot = task.Result;
+                int currentTotalScore = snapshot.Exists && snapshot.TryGetValue<int>("totalScore", out int storedScore) ? storedScore : 0;
+                int newTotalScore = currentTotalScore + scoreIncrement;
+
+                transaction.Update(userRef, "totalScore", newTotalScore);
+                Debug.Log($"✅ Total Score aggiornato su Firebase: {currentTotalScore} → {newTotalScore}");
+
+                return newTotalScore;
+            });
+        }).ContinueWith(task =>
+        {
+            if (task.IsCompletedSuccessfully)
+            {
+                Debug.Log("✅ Total Score aggiornato con successo su Firebase.");
+            }
+            else
+            {
+                Debug.LogError("❌ Errore durante l'aggiornamento del Total Score su Firebase.");
+            }
+
+            StartCoroutine(ReturnToChallengeScene());
+        });
+    }
+
+    IEnumerator ReturnToChallengeScene()
+    {
+        yield return new WaitForSeconds(3f);
+        SceneManager.LoadScene("ChallengeScene");
+    }
 }
