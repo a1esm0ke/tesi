@@ -1,0 +1,92 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6a924192439ef9b41bf18e8bcca39355, type: 3}
+  m_Name: HardQuizData 2
+  m_EditorClassIdentifier: 
+  questions:
+  - questionText: "Qual \xE8 la funzione principale della creatina nel corpo umano?  "
+    answers:
+    - Favorire la digestione
+    - Migliorare l'assorbimento del ferro
+    - Incrementare la riserva di ATP nei muscoli
+    - "Ridurre l\u2019infiammazione"
+    correctAnswerIndex: 2
+  - questionText: "Quale tipo di fibra muscolare \xE8 maggiormente coinvolto negli
+      esercizi di forza esplosiva?  "
+    answers:
+    - Fibre rosse (Tipo I)
+    - Fibre bianche (Tipo II)
+    - Fibre intermedie
+    - Fibre connettive
+    correctAnswerIndex: 1
+  - questionText: 'Quale dei seguenti ormoni ha un ruolo catabolico nei muscoli?  '
+    answers:
+    - Testosterone
+    - Insulina
+    - 'Cortisolo '
+    - Ormone della crescita
+    correctAnswerIndex: 2
+  - questionText: "Qual \xE8 l'effetto principale di un allenamento pliometrico?  "
+    answers:
+    - Aumentare la forza esplosiva
+    - Migliorare la resistenza cardiovascolare
+    - 'Ridurre la massa muscolare '
+    - "Aumentare la flessibilit\xE0"
+    correctAnswerIndex: 0
+  - questionText: "Quale tra queste variabili ha maggiore impatto sull\u2019ipertrofia
+      muscolare?  "
+    answers:
+    - Numero di ripetizioni
+    - Tempo sotto tensione
+    - Frequenza cardiaca
+    - Durata del riscaldamento
+    correctAnswerIndex: 1
+  - questionText: "Quale strategia nutrizionale \xE8 pi\xF9 indicata per massimizzare
+      la sintesi proteica post-allenamento?  "
+    answers:
+    - Consumare solo carboidrati
+    - Assumere proteine e carboidrati
+    - Digiunare
+    - 'Consumare solo grassi '
+    correctAnswerIndex: 1
+  - questionText: "In un programma di forza massimale, quale schema di ripetizioni
+      \xE8 pi\xF9 adatto?  "
+    answers:
+    - 1-5 ripetizioni
+    - 8-12 ripetizioni
+    - 15-20 ripetizioni
+    - 20+ ripetizioni
+    correctAnswerIndex: 0
+  - questionText: "Quale parte dell'allenamento \xE8 essenziale per prevenire il
+      sovrallenamento?  "
+    answers:
+    - Il defaticamento
+    - Il riscaldamento
+    - Il recupero
+    - Il stretching statico
+    correctAnswerIndex: 2
+  - questionText: "Qual \xE8 l\u2019impatto del sovraccarico progressivo sull\u2019allenamento
+      muscolare?  "
+    answers:
+    - Glicogeno muscolare
+    - Aminoacidi dai muscoli
+    - ATP libero
+    - Acidi grassi
+    correctAnswerIndex: 1
+  - questionText: "Durante un digiuno prolungato, quale substrato energetico viene
+      utilizzato di pi\xF9 dopo le prime ore?  "
+    answers:
+    - " Aumenta la tensione per stimolare l\u2019adattamento"
+    - Riduce il volume di allenamento
+    - Elimina il bisogno di recupero
+    - Migliora solo la resistenza cardiovascolare
+    correctAnswerIndex: 0

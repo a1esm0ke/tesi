@@ -1,0 +1,89 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6a924192439ef9b41bf18e8bcca39355, type: 3}
+  m_Name: NormalQuizData 1
+  m_EditorClassIdentifier: 
+  questions:
+  - questionText: "Quale macronutriente \xE8 la principale fonte di energia per il
+      corpo durante l\u2019allenamento anaerobico?"
+    answers:
+    - Proteine
+    - 'Carboidrati '
+    - Grassi
+    - Vitamine
+    correctAnswerIndex: 1
+  - questionText: "Quale di questi esercizi \xE8 un esempio di esercizio multiarticolare?  "
+    answers:
+    - Curl con manubri
+    - Estensioni tricipiti
+    - 'Squat '
+    - ' Alzate laterali'
+    correctAnswerIndex: 2
+  - questionText: "Quale dei seguenti alimenti \xE8 una fonte di proteine ad alto
+      valore biologico?  "
+    answers:
+    - Riso
+    - 'Petto di pollo '
+    - "Olio d\u2019oliva"
+    - Patate
+    correctAnswerIndex: 1
+  - questionText: "Quanto tempo \xE8 consigliato riposare tra una serie e l\u2019altra
+      per aumentare la forza massimale?"
+    answers:
+    - 10-30 secondi
+    - 30-60 secondi
+    - 1-3 minuti
+    - 3-5 minuti
+    correctAnswerIndex: 3
+  - questionText: "Qual \xE8 il ruolo principale del glicogeno muscolare?  "
+    answers:
+    - Costruire nuove fibre muscolari
+    - "Fornire energia durante l\u2019attivit\xE0 fisica"
+    - Proteggere le articolazioni
+    - Aumentare la sintesi proteica
+    correctAnswerIndex: 1
+  - questionText: "Cosa si intende per \u201Cipertrofia muscolare\u201D?  "
+    answers:
+    - L'aumento delle dimensioni delle fibre muscolari
+    - La riduzione della massa grassa
+    - L'incremento del numero delle fibre muscolari
+    - "L\u2019incremento della flessibilit\xE0"
+    correctAnswerIndex: 0
+  - questionText: "Quale tra questi esercizi \xE8 considerato un esercizio isometrico?  "
+    answers:
+    - Squat
+    - Panca piana
+    - 'Plank '
+    - Stacco da terra
+    correctAnswerIndex: 2
+  - questionText: 'Quale dei seguenti esercizi coinvolge principalmente i dorsali?  '
+    answers:
+    - Squat
+    - Panca piana
+    - Trazioni alla sbarra
+    - Affondi
+    correctAnswerIndex: 2
+  - questionText: Quanti grammi di proteine per kg di peso corporeo sono generalmente
+      consigliati per chi pratica bodybuilding?
+    answers:
+    - 0.8-1g
+    - 1-1.5g
+    - 1.6-2.2g
+    - 3-4g
+    correctAnswerIndex: 2
+  - questionText: "Quale ormone \xE8 principalmente responsabile della crescita muscolare?  "
+    answers:
+    - Insulina
+    - 'Testosterone '
+    - Cortisolo
+    - Melatonina
+    correctAnswerIndex: 1
