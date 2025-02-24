@@ -3609,7 +3609,7 @@ MonoBehaviour:
   m_text: "regole di gioco:\n\n-Registra e carica il tuo video eseguendo l\u2019esercizio
     assegnato.\n-Gli avversari potranno votare il tuo video con un check.\n-Accumula
     check per ottenere punti settimanali!\n-Il video puo' essere caricato solo una
-    volta a settimana e non pu\xF2 essere modificato."
+    volta a settimana e non puo' essere modificato."
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 355a75cbfdd74af4d9a23e1d47ed4258, type: 2}
   m_sharedMaterial: {fileID: -5389155880796946090, guid: 355a75cbfdd74af4d9a23e1d47ed4258, type: 2}
