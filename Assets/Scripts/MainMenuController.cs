@@ -63,7 +63,7 @@ public class MainMenuController : MonoBehaviour
             playerProfileImage.sprite = Sprite.Create(texture,
                 new Rect(0, 0, texture.width, texture.height),
                 new Vector2(0.5f, 0.5f));
-            AdaptProfileImage();
+            //AdaptProfileImage();
             Debug.Log("Foto caricata e adattata.");
         }
         else
@@ -88,7 +88,7 @@ public class MainMenuController : MonoBehaviour
                 playerProfileImage.sprite = Sprite.Create(texture,
                     new Rect(0, 0, texture.width, texture.height),
                     new Vector2(0.5f, 0.5f));
-                AdaptProfileImage();
+                //AdaptProfileImage();
                 Debug.Log("Foto caricata da URL e adattata.");
             }
             else
@@ -222,7 +222,7 @@ public class MainMenuController : MonoBehaviour
             playerProfileImage.sprite = Sprite.Create(texture,
                 new Rect(0, 0, texture.width, texture.height),
                 new Vector2(0.5f, 0.5f));
-            AdaptProfileImage();
+            //AdaptProfileImage();
 
             // Utilizza CloudinaryUploader per caricare l'immagine su Cloudinary
             CloudinaryUploader uploader = Object.FindFirstObjectByType<CloudinaryUploader>();

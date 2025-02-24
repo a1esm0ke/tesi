@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 3384305813575551438}
   - component: {fileID: 6990084866005310201}
   - component: {fileID: -5416031034115443397}
+  - component: {fileID: -1596464605139475869}
   m_Layer: 5
   m_Name: GoodFood4
   m_TagString: GoodFood
@@ -175,3 +176,15 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &-1596464605139475869
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3771759334714895903}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e05fd264f1758a4188fd1518cfbf8a9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

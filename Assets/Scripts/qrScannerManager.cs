@@ -9,7 +9,6 @@ public class QRScanner : MonoBehaviour
     public RawImage cameraView;       // Feed della fotocamera
     public Text resultText;           // Per mostrare l'ID utente scansionato
     public Button backButton;         // Bottone per tornare al Main Menu
-    public CompetitorManager competitorManager; // Riferimento al CompetitorManager
 
     private WebCamTexture webCamTexture; // Texture per la fotocamera
     private bool isScanning = true;       // Flag per controllare se la scansione è attiva
@@ -28,6 +27,7 @@ public class QRScanner : MonoBehaviour
         webCamTexture = new WebCamTexture();
         cameraView.texture = webCamTexture;
         cameraView.material.mainTexture = webCamTexture;
+        cameraView.rectTransform.localEulerAngles = new Vector3(0, 0, -webCamTexture.videoRotationAngle + 270);
 
         // Calcola il rapporto d'aspetto
         float aspectRatio = (float)webCamTexture.width / (float)webCamTexture.height;

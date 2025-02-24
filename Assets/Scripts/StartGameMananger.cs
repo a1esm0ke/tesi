@@ -17,7 +17,7 @@ public class StartGame : MonoBehaviour
     void LoadRandomMiniGameScene()
     {
         // Scegli una scena a caso: 50% MiniGameScene, 50% MiniGame2Scene
-        if (Random.value < 0.5f)
+        if (Random.value < 0.1f)
         {
             SceneManager.LoadScene("MiniGameScene");
         }
